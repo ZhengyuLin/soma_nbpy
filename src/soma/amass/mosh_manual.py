@@ -36,8 +36,8 @@ from omegaconf import OmegaConf
 
 from moshpp.mosh_head import MoSh
 from moshpp.mosh_head import run_moshpp_once
-from soma.render.blender_tools import prepare_render_cfg
-from soma.render.blender_tools import render_mosh_once
+#from soma.render.blender_tools import prepare_render_cfg
+#from soma.render.blender_tools import render_mosh_once
 from soma.tools.parallel_tools import run_parallel_jobs
 
 
@@ -72,6 +72,7 @@ def mosh_manual(
         if fname_filter:
             if not sum([i in mocap_fname for i in fname_filter]): continue
         mocap_key = '_'.join(mocap_fname.split('/')[-3:-1])
+        print(f'[mosh_manual:75] mocap_key: {mocap_key}')
 
         persubject_marker_layout = kwargs.get('persubject_marker_layout', False)
         mosh_job = mosh_cfg.copy()
@@ -99,20 +100,21 @@ def mosh_manual(
             render_job.update({
                 'mesh.mosh_stageii_pkl_fnames': [cur_mosh_cfg.dirs.stageii_fname],
             })
-            cur_render_cfg = prepare_render_cfg(**render_job)
-            if not osp.exists(cur_render_cfg.dirs.mp4_out_fname):
-                render_jobs.append(render_job)
+            # cur_render_cfg = prepare_render_cfg(**render_job)
+            # if not osp.exists(cur_render_cfg.dirs.mp4_out_fname):
+            #    render_jobs.append(render_job)
 
     if 'mosh' in run_tasks:
         logger.info('Submitting MoSh++ jobs.')
 
         base_parallel_cfg = OmegaConf.load(osp.join(app_support_dir, 'conf/parallel_conf/moshpp_parallel.yaml'))
         moshpp_parallel_cfg = OmegaConf.merge(base_parallel_cfg, OmegaConf.create(parallel_cfg))
+        print("mosh jobs", mosh_jobs)
         run_parallel_jobs(func=run_moshpp_once, jobs=mosh_jobs, parallel_cfg=moshpp_parallel_cfg)
 
-    if 'render' in run_tasks:
-        logger.info('Submitting render jobs.')
+#    if 'render' in run_tasks:
+#        logger.info('Submitting render jobs.')
 
-        base_parallel_cfg = OmegaConf.load(osp.join(app_support_dir, 'conf/parallel_conf/blender_parallel.yaml'))
-        render_parallel_cfg = OmegaConf.merge(base_parallel_cfg, OmegaConf.create(parallel_cfg))
-        run_parallel_jobs(func=render_mosh_once, jobs=render_jobs, parallel_cfg=render_parallel_cfg)
+#        base_parallel_cfg = OmegaConf.load(osp.join(app_support_dir, 'conf/parallel_conf/blender_parallel.yaml'))
+#        render_parallel_cfg = OmegaConf.merge(base_parallel_cfg, OmegaConf.create(parallel_cfg))
+#        run_parallel_jobs(func=render_mosh_once, jobs=render_jobs, parallel_cfg=render_parallel_cfg)
